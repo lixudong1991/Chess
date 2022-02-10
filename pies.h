@@ -3,7 +3,7 @@
 class pies
 {
 public:
-    pies()=default;
+    pies(){}
     pies(int t0,int t1,int x, int y);
     int getxx()const{return xx;}
     int getyy()const{return yy;}
