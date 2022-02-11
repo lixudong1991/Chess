@@ -256,216 +256,361 @@ void cces::mouseReleaseEvent(QMouseEvent *ev)
 
 bool cces::canMove(int iid, int ixx, int iyy)
 {
-    int ix = piess[iid].getxx();
-    int iy = piess[iid].getyy();
-    int t0 = piess[iid].gett0();
+    QVector<QPair<int, int> > v;
+    getPath(iid,v);
+    return v.contains(QPair<int, int>(ixx,iyy));
+}
 
-    switch (piess[iid].gett1()) {
+void cces::getPath(int idd, QVector<QPair<int, int> > &v)
+{
+
+    int x=piess[idd].getxx();
+    int y=piess[idd].getyy();
+    switch (piess[idd].gett1())
+    {
     case 1:
     {
-        if ((((ix - ixx == 1) && (ixx >= 3)) ||
-             ((ix - ixx == -1) && (ixx <= 5))) && (iy == iyy)) return true;
+        int xx= x+1,yy = y;
+        if(xx<6&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+            v.push_back(QPair<int, int>(xx,yy));
+        xx = x-1;
+        if(xx>2&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+            v.push_back(QPair<int, int>(xx,yy));
+        xx = x;
+        yy = y+1;
+        if(y<3)
+        {
+            if(yy<3&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+                v.push_back(QPair<int, int>(xx,yy));
 
-        if ((ix == ixx) && ((iy - iyy == 1) || (iy - iyy == -1))) {
-            if ((t0 == -dt) && (iyy <= 2) && (iyy >= 0)) return true;
-            else if ((t0 == dt) && (iyy >= 7) && (iyy <= 9)) return true;
+        }else
+        {
+            if(yy<10&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+                v.push_back(QPair<int, int>(xx,yy));
         }
-        int m = (id == 4 ? 27 : 4);
+        xx = x;
+        yy = y-1;
+        if(y<3)
+        {
+            if(yy>-1&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+                v.push_back(QPair<int, int>(xx,yy));
 
-        if ((piess[4].getxx() == piess[27].getxx()) && (ix == ixx) &&
-            (iyy == piess[m].getyy()))
+        }else
+        {
+            if(yy>6&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+
+        if(piess[4].getxx() == piess[27].getxx())
         {
             for (int n = piess[4].getyy() + 1; n != piess[27].getyy(); ++n)
             {
-                if (cbod[ix][n] != -1) return false;
+                if (cbod[x][n] != -1) return;
             }
-            return true;
+            if(idd == 4)
+                v.push_back(QPair<int, int>(x,piess[27].getyy()));
+            else
+                v.push_back(QPair<int, int>(x,piess[4].getyy()));
         }
-        return false;
-    }
 
+        break;
+    }
     case 2:
     {
-        if ((ixx < 3) || (ixx > 5)) return false;
+        int  xx= x+1,yy = y+1;
+        if(y<3)
+        {
+            if((yy<3&&xx<6)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+                v.push_back(QPair<int, int>(xx,yy));
 
-        if ((t0 == dt) && ((iyy < 7) || (iyy > 9))) return false;
-
-        if ((t0 == -dt) && ((iyy < 0) || (iyy > 2))) return false;
-
-        if (((ix - ixx == -1) || (ix - ixx == 1)) &&
-            ((iy - iyy == -1) || (iy - iyy == 1))) return true;
-
-        return false;
+        }else
+        {
+            if((yy<10&&xx<6)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+        xx= x+1,yy = y-1;
+        if(y<3)
+        {
+            if((yy>-1&&xx<6)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+                v.push_back(QPair<int, int>(xx,yy));
+        }else
+        {
+            if((yy>6&xx<6)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+        xx= x-1,yy = y+1;
+        if(y<3)
+        {
+            if((yy<3&&xx>2)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+                v.push_back(QPair<int, int>(xx,yy));
+        }else
+        {
+            if((yy<10&&xx>2)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+        xx= x-1,yy = y-1;
+        if(y<3)
+        {
+            if((yy>-1&&xx>2)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+                v.push_back(QPair<int, int>(xx,yy));
+        }else
+        {
+            if((yy>6&&xx>2)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+        break;
     }
-
     case 3:
     {
-        if (((t0 == dt) && (iyy < 5)) || ((t0 == -dt) && (iyy > 4))) return false;
-
-        if (((ixx - ix == 2) || (ixx - ix == -2)) &&
-            ((iyy - iy == 2) || (iyy - iy == -2)))
+        int  xx= x+2,yy = y+2;
+        if(y<5)
         {
-            if (cbod[(ixx + ix) / 2][(iyy + iy) / 2] != -1) return false;
+            if((yy<5&&xx<9)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x+1][y+1]==-1)
+                v.push_back(QPair<int, int>(xx,yy));
 
-            return true;
+        }else
+        {
+            if((yy<10&&xx<9)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x+1][y+1]==-1)
+                v.push_back(QPair<int, int>(xx,yy));
         }
-        return false;
+        xx= x+2,yy = y-2;
+        if(y<5)
+        {
+            if((yy>-1&&xx<9)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x+1][y-1]==-1)
+                v.push_back(QPair<int, int>(xx,yy));
+        }else
+        {
+            if((yy>4&xx<9)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x+1][y-1]==-1)
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+        xx= x-2,yy = y+2;
+        if(y<5)
+        {
+            if((yy<5&&xx>-1)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x-1][y+1]==-1)
+                v.push_back(QPair<int, int>(xx,yy));
+        }else
+        {
+            if((yy<10&&xx>-1)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x-1][y+1]==-1)
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+        xx= x-2,yy = y-2;
+        if(y<5)
+        {
+            if((yy>-1&&xx>-1)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x-1][y-1]==-1)
+                v.push_back(QPair<int, int>(xx,yy));
+        }else
+        {
+            if((yy>4&&xx>-1)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x-1][y-1]==-1)
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+        break;
     }
-
     case 5:
     {
-        if ((ixx != ix) && (iyy != iy)) return false;
-
-        if ((ixx == ix) && (iyy != iy))
+        for(int i = x+1;i<9;i++)
         {
-            int ty, tx;
-
-            if (iyy > iy)
+            if(cbod[i][y] ==-1)
             {
-                ty = iyy;
-                tx = iy;
+                v.push_back(QPair<int, int>(i,y));
+            }else{
+                if(piess[cbod[i][y]].gett0()!=piess[idd].gett0())
+                    v.push_back(QPair<int, int>(i,y));
+                break;
             }
-            else {
-                ty = iy;
-                tx = iyy;
-            }
-
-            for (int n = tx + 1; n != ty; ++n)
-            {
-                if (cbod[ixx][n] != -1) return false;
-            }
-            return true;
         }
-
-        if ((ixx != ix) && (iyy == iy))
+        for(int i = x-1;i>-1;i--)
         {
-            int ty, tx;
-
-            if (ixx > ix)
+            if(cbod[i][y] ==-1)
             {
-                ty = ixx;
-                tx = ix;
+                v.push_back(QPair<int, int>(i,y));
+            }else{
+                if(piess[cbod[i][y]].gett0()!=piess[idd].gett0())
+                    v.push_back(QPair<int, int>(i,y));
+                break;
             }
-            else {
-                ty = ix;
-                tx = ixx;
-            }
-
-            for (int n = tx + 1; n != ty; ++n)
-            {
-                if (cbod[n][iyy] != -1) return false;
-            }
-            return true;
         }
-        return false;
+        for(int i = y+1;i<10;i++)
+        {
+            if(cbod[x][i] ==-1)
+            {
+                v.push_back(QPair<int, int>(x,i));
+            }else{
+                if(piess[cbod[x][i]].gett0()!=piess[idd].gett0())
+                    v.push_back(QPair<int, int>(x,i));
+                break;
+            }
+        }
+        for(int i = y-1;i>-1;i--)
+        {
+            if(cbod[x][i] ==-1)
+            {
+                v.push_back(QPair<int, int>(x,i));
+            }else{
+                if(piess[cbod[x][i]].gett0()!=piess[idd].gett0())
+                    v.push_back(QPair<int, int>(x,i));
+                break;
+            }
+        }
+        break;
     }
-
     case 4:
     {
-        if (((ixx - ix == -2) || (ixx - ix == 2)) &&
-            ((iyy - iy == 1) || (iyy - iy == -1))) {
-            if (cbod[(ixx + ix) / 2][iy] != -1) return false;
-
-            return true;
+        int  xx= x+2,yy = y+1;
+        if(yy<10&&xx<9&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x+1][y]==-1)
+        {
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+        xx= x+2,yy = y-1;
+        if(yy>-1&&xx<9&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x+1][y]==-1)
+        {
+                v.push_back(QPair<int, int>(xx,yy));
         }
 
-        if (((ixx - ix == -1) || (ixx - ix == 1)) &&
-            ((iyy - iy == 2) || (iyy - iy == -2))) {
-            if (cbod[ix][(iy + iyy) / 2] != -1) return false;
-
-            return true;
+        xx= x-2,yy = y+1;
+        if(yy<10&&xx>-1&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x-1][y]==-1)
+        {
+                v.push_back(QPair<int, int>(xx,yy));
         }
-        return false;
+        xx= x-2,yy = y-1;
+        if(yy>-1&&xx>-1&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x-1][y]==-1)
+        {
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+        xx= x+1,yy = y+2;
+        if(yy<10&&xx<9&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x][y+1]==-1)
+        {
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+        xx= x+1,yy = y-2;
+        if(yy>-1&&xx<9&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x][y-1]==-1)
+        {
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+        xx= x-1,yy = y+2;
+        if(yy<10&&xx>-1&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x][y+1]==-1)
+        {
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+        xx= x-1,yy = y-2;
+        if(yy>-1&&xx>-1&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x][y-1]==-1)
+        {
+                v.push_back(QPair<int, int>(xx,yy));
+        }
+        break;
     }
-
     case 6:
     {
-        if ((ixx != ix) && (iyy != iy)) return false;
-
-        if ((ixx == ix) && (iyy != iy))
+        bool stat =false;
+        for(int i = x+1;i<9;i++)
         {
-            int ty, tx, tm = 0;
-
-            if (iyy > iy)
+            if(cbod[i][y] ==-1)
             {
-                ty = iyy;
-                tx = iy;
+                if(!stat)
+                     v.push_back(QPair<int, int>(i,y));
+            }else{
+                if(stat)
+                {
+                    if(piess[cbod[i][y]].gett0()!=piess[idd].gett0())
+                        v.push_back(QPair<int, int>(i,y));
+                    break;
+                }
+
+                stat = true;
+
             }
-            else {
-                ty = iy;
-                tx = iyy;
-            }
-
-            for (int n = tx + 1; n != ty; ++n)
-            {
-                if (cbod[ixx][n] != -1) ++tm;
-
-                if (tm > 2) return false;
-            }
-
-            if ((tm == 0) && (cbod[ixx][iyy] == -1)) return true;
-
-            if ((tm == 1) && (cbod[ixx][iyy] != -1)) return true;
-
-            return false;
         }
-
-        if ((ixx != ix) && (iyy == iy))
+        stat =false;
+        for(int i = x-1;i>-1;i--)
         {
-            int ty, tx, tm = 0;
-
-            if (ixx > ix)
+            if(cbod[i][y] ==-1)
             {
-                ty = ixx;
-                tx = ix;
+                if(!stat)
+                v.push_back(QPair<int, int>(i,y));
+            }else{
+                if(stat)
+                {
+                    if(piess[cbod[i][y]].gett0()!=piess[idd].gett0())
+                        v.push_back(QPair<int, int>(i,y));
+                    break;
+                }
+
+                stat = true;
             }
-            else {
-                ty = ix;
-                tx = ixx;
-            }
-
-            for (int n = tx + 1; n != ty; ++n)
-            {
-                if (cbod[n][iyy] != -1) ++tm;
-
-                if (tm > 1) return false;
-            }
-
-            if ((tm == 0) && (cbod[ixx][iyy] == -1)) return true;
-
-            if ((tm == 1) && (cbod[ixx][iyy] != -1)) return true;
-
-            return false;
         }
-        return false;
+        stat =false;
+        for(int i = y+1;i<10;i++)
+        {
+            if(cbod[x][i] ==-1)
+            {
+                if(!stat)
+                v.push_back(QPair<int, int>(x,i));
+            }else{
+                if(stat)
+                {
+                    if(piess[cbod[x][i]].gett0()!=piess[idd].gett0())
+                        v.push_back(QPair<int, int>(x,i));
+                    break;
+                }
+
+                stat = true;
+            }
+        }
+        stat =false;
+        for(int i = y-1;i>-1;i--)
+        {
+            if(cbod[x][i] ==-1)
+            {
+                if(!stat)
+                v.push_back(QPair<int, int>(x,i));
+            }else{
+                if(stat)
+                {
+                    if(piess[cbod[x][i]].gett0()!=piess[idd].gett0())
+                        v.push_back(QPair<int, int>(x,i));
+                    break;
+                }
+
+                stat = true;
+            }
+        }
+        break;
     }
-
     case 7:
-
-        if (t0 == -dt)
+        if(idd < 17)
         {
-            if ((ixx == ix) && (iyy - iy == 1)) return true;
+            if(y<5)
+            {
+                if(cbod[x][y+1]==-1||piess[cbod[x][y+1]].gett0()!=piess[idd].gett0())
+                    v.push_back(QPair<int, int>(x,y+1));
+            }else
+            {
+                if(y+1<10&&(cbod[x][y+1]==-1||piess[cbod[x][y+1]].gett0()!=piess[idd].gett0()))
+                    v.push_back(QPair<int, int>(x,y+1));
+                if(x+1<9&&(cbod[x+1][y]==-1||piess[cbod[x+1][y]].gett0()!=piess[idd].gett0()))
+                    v.push_back(QPair<int, int>(x+1,y));
+                if(x-1>-1&&(cbod[x-1][y]==-1||piess[cbod[x-1][y]].gett0()!=piess[idd].gett0()))
+                    v.push_back(QPair<int, int>(x-1,y));
+            }
 
-            if ((iy >= 5) &&
-                (((ixx - ix == 1) || (ixx - ix == -1)) &&
-                 (iyy == iy))) return true;
-
-            return false;
+        }else
+        {
+            if(y<5)
+            {
+                if(y-1>-1&&(cbod[x][y-1]==-1||piess[cbod[x][y-1]].gett0()!=piess[idd].gett0()))
+                    v.push_back(QPair<int, int>(x,y-1));
+                if(x+1<9&&(cbod[x+1][y]==-1||piess[cbod[x+1][y]].gett0()!=piess[idd].gett0()))
+                    v.push_back(QPair<int, int>(x+1,y));
+                if(x-1>-1&&(cbod[x-1][y]==-1||piess[cbod[x-1][y]].gett0()!=piess[idd].gett0()))
+                    v.push_back(QPair<int, int>(x-1,y));
+            }else
+            {
+                if(cbod[x][y-1]==-1||piess[cbod[x][y-1]].gett0()!=piess[idd].gett0())
+                    v.push_back(QPair<int, int>(x,y-1));
+            }
         }
 
-        if (t0 == dt)
-        {
-            if ((ixx == ix) && (iyy - iy == -1)) return true;
-
-            if ((iy <= 4) &&
-                (((ixx - ix == 1) || (ixx - ix == -1)) &&
-                 (iyy == iy))) return true;
-
-            return false;
-        }
-        return false;
-
+        break;
     default:
-        return false;
+        break;
     }
 }
