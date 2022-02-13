@@ -1,10 +1,13 @@
-#include "cces.h"
+﻿#include "cces.h"
 #include <QPainter>
 #include <QMouseEvent>
 #include <QRect>
 #include <QTextOption>
+#include <QPainterPath>
 #define CL1  "red"
 #define CL2  "blue"
+ QMutex m_mutex;
+ QWaitCondition waitcond;
 cces::cces(int dd, QWidget *parent) : dt(dd),
     QWidget(parent)
 {
@@ -59,13 +62,16 @@ cces::cces(int dd, QWidget *parent) : dt(dd),
         // 兵 27~31
     };
 
-    for (int i = 0; i < 32; i++) piess.append(temp[i]);
+    for(int i=0;i<32;i++)
+        piess.append(temp[i]);
+
 
     //  piess=temp;
     for (int i = 0; i != 32; ++i)
     {
         cbod[piess[i].getxx()][piess[i].getyy()] = i;
     }
+    setFixedSize(d*10, d*11);
 }
 
 cces::~cces()
@@ -109,6 +115,7 @@ void cces::paintEvent(QPaintEvent *)
         { { 7, 6  }, { 9, 8  } },    { { 1, 8  }, { 3, 10 } },
         { { 4, 10 }, { 6, 8  } },
         { { 6, 10 }, { 4, 8  } },    { { 7, 10 }, { 9, 8  } }
+
     };
 
     for (int i = 0; i != 16; ++i)
@@ -116,12 +123,34 @@ void cces::paintEvent(QPaintEvent *)
         painte.drawLine(QPoint(a[i][0][0] * d, a[i][0][1] * d),
                         QPoint(a[i][1][0] * d, a[i][1][1] * d));
     }
-    painte.setFont(QFont(CHTXT("楷体"), 18, 80));
-    painte.drawText(QRect(2 * d, 4 * d + d / 2, 80, 80), Qt::AlignCenter,
+    int paoxian[4][2] = {
+        {2,3},{8,3},{2,8},{8,8}
+    };
+    QPainterPath path;
+    for (int i=0;i<4;i++)
+    { 
+        path.moveTo(paoxian[i][0] * d - d / 8, paoxian[i][1] * d - d / 4);
+        path.lineTo(paoxian[i][0] * d - d / 8, paoxian[i][1] * d - d / 8);
+        path.lineTo(paoxian[i][0] * d - d / 4, paoxian[i][1] * d - d / 8);
+        painte.drawPath(path);
+        path.moveTo(paoxian[i][0] * d + d / 8, paoxian[i][1] * d - d / 4);
+        path.lineTo(paoxian[i][0] * d + d / 8, paoxian[i][1] * d - d / 8);
+        path.lineTo(paoxian[i][0] * d + d / 4, paoxian[i][1] * d - d / 8);
+        painte.drawPath(path);
+        path.moveTo(paoxian[i][0] * d - d / 8, paoxian[i][1] * d + d / 4);
+        path.lineTo(paoxian[i][0] * d - d / 8, paoxian[i][1] * d + d / 8);
+        path.lineTo(paoxian[i][0] * d - d / 4, paoxian[i][1] * d + d / 8);
+        painte.drawPath(path);
+        path.moveTo(paoxian[i][0] * d + d / 8, paoxian[i][1] * d + d / 4);
+        path.lineTo(paoxian[i][0] * d + d / 8, paoxian[i][1] * d + d / 8);
+        path.lineTo(paoxian[i][0] * d + d / 4, paoxian[i][1] * d + d / 8);
+        painte.drawPath(path);
+    }
+    painte.setFont(QFont(CHTXT("楷体"), 18, 2 * d));
+    painte.drawText(QRect(2 * d, 4 * d + d / 2, 2*d, 2 * d), Qt::AlignCenter,
                     CHTXT("楚 河"));
-    painte.drawText(QRect(6 * d, 4 * d + d / 2, 80, 80), Qt::AlignCenter,
+    painte.drawText(QRect(6 * d, 4 * d + d / 2, 2 * d, 2 * d), Qt::AlignCenter,
                     CHTXT("汉 界"));
-
     for (int i = 0; i != 32; ++i)
     {
         if (piess[i].gett0() == 0) continue;
@@ -171,7 +200,12 @@ void cces::paintEvent(QPaintEvent *)
             break;
 
         case 5:
-            painte.drawText(rect, Qt::AlignCenter, CHTXT("車"));
+            piess[i].gett0() ==
+                1 ? painte.drawText(rect, Qt::AlignCenter,
+                    CHTXT("車")) : painte
+                .drawText(rect,
+                    Qt::AlignCenter,
+                    CHTXT("车"));
             break;
 
         case 4:
@@ -215,8 +249,8 @@ void cces::mouseReleaseEvent(QMouseEvent *ev)
         (t2 >= (10 * d + d / 2))) return;
 
     QPoint tep(((t1 + d / 2) / d) * d, ((t2 + d / 2) / d) * d);
-    int    tx = tep.x() / 40 - 1;
-    int    ty = tep.y() / 40 - 1;
+    int    tx = tep.x() / d - 1;
+    int    ty = tep.y() / d - 1;
 
     if (id == -1)
     {
@@ -576,7 +610,7 @@ void cces::getPath(int idd, QVector<QPair<int, int> > &v)
         break;
     }
     case 7:
-        if(idd < 17)
+        if(idd < 16)
         {
             if(y<5)
             {

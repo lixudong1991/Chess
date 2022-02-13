@@ -8,12 +8,12 @@ netcces::netcces(int da) : cces(da)
     if (dt == -1)
     {
         serv = new QTcpServer(this);
-        bool b=    serv->listen(QHostAddress::Any, 9876);
+        bool b=    serv->listen(QHostAddress("192.168.100.4"), 9876);
         connect(serv, SIGNAL(newConnection()), this, SLOT(slotion()));
     }
     else {
         sk = new QTcpSocket(this);
-        sk->connectToHost(QHostAddress("127.0.0.1"), 9876);
+        sk->connectToHost(QHostAddress("192.168.100.4"), 9876);
         connect(sk, SIGNAL(readyRead()), this, SLOT(slotrecv()));
     }
 }
@@ -64,8 +64,8 @@ void netcces::mouseReleaseEvent(QMouseEvent *e1v)
         (t2 >= (10 * d + d / 2))) return;
 
     QPoint tep(((t1 + d / 2) / d) * d, ((t2 + d / 2) / d) * d);
-    int    tx = tep.x() / 40 - 1;
-    int    ty = tep.y() / 40 - 1;
+    int    tx = tep.x() / d - 1;
+    int    ty = tep.y() / d - 1;
 
     if ((mov01 && (dt == -1)) || (!mov01 && (dt == 1))) return;
 

@@ -1,10 +1,18 @@
 #include "bot.h"
-#include <unistd.h>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QRect>
 #include <QTextOption>
 #include <QDebug>
+
+#ifdef _WIN32
+#include <Windows.h>
+#elif  __linux__
+#include <unistd.h>
+#endif
+
+
+
 #define CL1 "red"
 #define CL2 "blue"
 
@@ -15,14 +23,17 @@ bot::bot(QWidget *parent)
     m_bot = new botprocess;
     m_bot ->m_board =this;
     m_botThread = new QThread();
-    m_mutex     =new QMutex;
 
     m_bot->moveToThread(m_botThread);
     connect(this, SIGNAL(botmove()), m_bot, SLOT(botmove()));
     connect(m_bot, SIGNAL(botfinsh()), this, SLOT(botfinsh()));
     mov01 =false;
     m_botThread->start();
+    setFixedSize(d * 10 + 100, d * 11);
+    bt = new QPushButton(QString::fromLocal8Bit("ÏÂÒ»²½"),this);
 
+    bt->move(d * 10 + 10, 200); bt->setFixedSize(100,50);
+    connect(bt,SIGNAL(clicked(bool)),this,SLOT(onbt()));
 }
 
 bot::~bot()
@@ -36,9 +47,14 @@ void bot::botfinsh()
 {
    update();
 }
+void bot::onbt()
+{
+    update();
+    waitcond.wakeAll();
+}
 void bot::mouseReleaseEvent( QMouseEvent *ev ) {
 
-    QMutexLocker lock(m_mutex);
+    QMutexLocker lock(&m_mutex);
    // if ( mov01 ) return;
 
     if ( ( piess[ 4 ].gett0() == 0 ) || ( piess[ 27 ].gett0() == 0 ) ) return;
@@ -51,8 +67,8 @@ void bot::mouseReleaseEvent( QMouseEvent *ev ) {
         return;
 
     QPoint tep( ( ( t1 + d / 2 ) / d ) * d, ( ( t2 + d / 2 ) / d ) * d );
-    int    tx = tep.x() / 40 - 1;
-    int    ty = tep.y() / 40 - 1;
+    int    tx = tep.x() / d - 1;
+    int    ty = tep.y() / d - 1;
 
     if ( id == -1 ) {
         if ( cbod[ tx ][ ty ] == -1 ) return;
@@ -91,24 +107,25 @@ void bot::mouseReleaseEvent( QMouseEvent *ev ) {
 }
 
 
-void botprocess::bove( int idd, QVector<QPair<int, int> > &v ) {
-
-//    for ( int i = 0; i != 9; ++i ) {
-//        for ( int j = 0; j != 10; ++j ) {
-//            if ( ( m_board->cbod[ i ][ j ] != -1 ) &&
-//                 ( m_board->piess[ m_board->cbod[ i ][ j ] ].gett0() == m_board->piess[ idd ].gett0() ) )
-//                continue;
-
-//            if ( m_board->canMove( idd, i, j ) ) v.push_back( QPair<int, int>( i, j ) );
-//        }
-//    }
-    m_board->getPath(idd,v);
+int botprocess::bove()
+{
+    int sum=0;
+    for(int i=0;i<m_board->piess.size();i++)
+    {
+        if(m_board->piess.at(i).gett0()==0)
+            continue;
+        sum+=m_board->piess.at(i).gtzhi();
+    }
+    return sum;
 }
+
+
+
 
 botprocess::botprocess(QObject *parent):
     m_board(NULL)
 {
-
+    count = 0;
 }
 
 botprocess::~botprocess()
@@ -116,14 +133,276 @@ botprocess::~botprocess()
 
 }
 
+int botprocess::_botmove(bool b,int minv,int maxv)
+{
+    ++count;
+    int start = b?0:16, end=b?16:32;
+    int val = b?12000:-12000;
+    int parrminv =minv,parrmaxv=maxv;
+    for (int j = start; j != end; ++j)
+    {
+        if (m_board->piess[j].gett0() == 0) continue;
+        QVector<QPair<int, int> > vj;
+        m_board->getPath(j, vj);
+        if (vj.isEmpty()) continue;
+        int xx = m_board->piess[j].getxx();
+        int yy = m_board->piess[j].getyy();
+        m_board->cbod[xx][yy] = -1;
+        for (QVector<QPair<int, int> >::const_iterator ite1 =
+            vj.begin();
+            ite1 != vj.end(); ++ite1) {
+            int idj = m_board->cbod[ite1->first][ite1->second];
+            m_board->piess[j].setxy(ite1->first, ite1->second);
+            m_board->cbod[ite1->first][ite1->second] = j;
+            int t0 = 0;
+            if (idj != -1)
+            {       
+                t0 = m_board->piess[idj].gett0();
+                m_board->piess[idj].settp0(0);
+            }
+            int value;
+            if (count <3 && idj!=4)
+            {
+                value = _botmove(!b,parrminv,parrmaxv);
+            }else
+            {
+                value = bove();
+            }
+            if(b)
+            {
+                if(val>value)
+                    val =value;
+            }
+            else
+            {
+                if(val<value)
+                    val =value;
+            }
+            m_board->cbod[ite1->first][ite1->second] = idj;
+            if (idj != -1)
+                m_board->piess[idj].settp0(t0);
+        }
+        m_board->cbod[xx][yy] = j;
+        m_board->piess[j].setxy(xx, yy);   
+    }
+    --count;
+    return val;
+
+}
+
+int botprocess::alpahbeta(bool b, int parentminv, int parentmaxv, int depth)
+{
+
+    if(depth == 0)
+    {
+        int v =  bove();
+      //  qDebug() << "sum = " << v;
+      //  waitcond.wait(&m_mutex);
+        return v;
+    }
+    int start = b?0:16, end=b?16:32;
+    int maxv = parentmaxv,minv=parentminv,value=0;
+    for (int j = start; j != end; ++j)
+    {
+        if (m_board->piess[j].gett0() == 0) continue;
+        QVector<QPair<int, int> > vj;
+        m_board->getPath(j, vj);
+        if (vj.isEmpty()) continue;
+        int xx = m_board->piess[j].getxx();
+        int yy = m_board->piess[j].getyy();
+        m_board->cbod[xx][yy] = -1;
+
+        for (QVector<QPair<int, int> >::const_iterator ite1 =vj.begin(); ite1 != vj.end(); ++ite1)
+        {
+            int idj = m_board->cbod[ite1->first][ite1->second];
+            m_board->piess[j].setxy(ite1->first, ite1->second);
+            m_board->cbod[ite1->first][ite1->second] = j;
+            int t0 = 0;
+            if (idj != -1)
+            {
+                t0 = m_board->piess[idj].gett0();
+                m_board->piess[idj].settp0(0);
+            } 
+                      
+            if (depth == 4 && idj ==4)
+            {
+                int v1 = bove();
+                m_board->cbod[ite1->first][ite1->second] = idj;
+                m_board->piess[4].settp0(t0);
+                m_board->cbod[xx][yy] = j;
+                m_board->piess[j].setxy(xx, yy);
+                return v1;
+            }
+            value = alpahbeta(!b,minv,maxv,depth-1);
+            if (b)
+            {
+                if (value < maxv )
+                    maxv = value;
+            }
+            else
+            {
+                if (value > minv)
+                    minv = value;
+            }
+            if(maxv<=minv)
+            {
+                m_board->cbod[ite1->first][ite1->second] = idj;
+                if (idj != -1)
+                    m_board->piess[idj].settp0(t0);
+                m_board->cbod[xx][yy] = j;
+                m_board->piess[j].setxy(xx, yy);
+                goto ret;
+            }
+            m_board->cbod[ite1->first][ite1->second] = idj;
+            if (idj != -1)
+                m_board->piess[idj].settp0(t0);
+
+        }
+        m_board->cbod[xx][yy] = j;
+        m_board->piess[j].setxy(xx, yy);
+    }
+ret:
+    if (b)
+    {
+        if (maxv != parentmaxv)
+            return maxv;
+    }
+    else
+    {
+        if (minv != parentminv)
+            return minv;
+    }
+
+    return value;
+}
+void botprocess::botmove()
+{
+    Sleep(100);
+    QMutexLocker lock(&m_mutex);
+    if (!m_board)
+    {
+        emit botfinsh();
+        return;
+    }
+    int id1, xx1, yy1,zhi=11000;
+    int maxv = 12000,minv=-12000;
+    bool bdead=false;
+        for (int i = 0; i != 16; ++i) {
+            if (m_board->piess[i].gett0() == 0) continue;
+            QVector<QPair<int, int> > vi;
+            m_board->getPath(i, vi);
+            if (vi.isEmpty()) continue;
+            int xx = m_board->piess[i].getxx();
+            int yy = m_board->piess[i].getyy();
+            m_board->cbod[xx][yy] = -1;
+            for (QVector<QPair<int, int> >::const_iterator ite1 = vi.begin();ite1 != vi.end(); ++ite1)
+            {
+                int idj = m_board->cbod[ite1->first][ite1->second];
+                m_board->piess[i].setxy(ite1->first, ite1->second);
+                m_board->cbod[ite1->first][ite1->second] = i;
+                int val = 0, tp0;
+                if (idj != -1)
+                {
+                    tp0 = m_board->piess[idj].gett0();
+                    m_board->piess[idj].settp0(0);
+                }
+                val=alpahbeta(false,minv,maxv,4);
+             //   qDebug() << "zhi = " << zhi <<" val = " <<val;
+                if (zhi >= val)
+                {
+                    xx1 = ite1->first;
+                    yy1 = ite1->second;
+                    id1 = i;
+                    zhi = val;
+                }
+                m_board->cbod[ite1->first][ite1->second] = idj;
+                if (idj != -1)
+                    m_board->piess[idj].settp0(tp0);
+            }
+            m_board->cbod[xx][yy] = i;
+            m_board->piess[i].setxy(xx, yy);
+        }
+    m_board->piess[id1]._sel = true;
+    emit botfinsh();
+    Sleep(300);
+    if (m_board->cbod[xx1][yy1] != -1) m_board->piess[m_board->cbod[xx1][yy1]].settp0(0);
+    m_board->cbod[xx1][yy1] = id1;
+    m_board->cbod[m_board->piess[id1].getxx()][m_board->piess[id1].getyy()] = -1;
+    m_board->piess[id1].setxy(xx1, yy1);
+    m_board->piess[id1]._sel = false;
+    static int sum = 0;
+    qDebug() << "b " << ++sum;
+    emit botfinsh();
+}
+
+/*
+void botprocess::botmove()
+{
+    Sleep(100);
+    QMutexLocker lock(&m_mutex);
+    if (!m_board)
+    {
+        emit botfinsh();
+        return;
+    }
+    int id1, xx1, yy1, zhi1 = 12000;
+    int max = 12000,min=-12000;
+    for (int i = 0; i != 16; ++i) {
+        if (m_board->piess[i].gett0() == 0) continue;
+        QVector<QPair<int, int> > vi;
+        m_board->getPath(i, vi);
+        if (vi.isEmpty()) continue;
+        int xx = m_board->piess[i].getxx();
+        int yy = m_board->piess[i].getyy();
+        m_board->cbod[xx][yy] = -1;
+        for (QVector<QPair<int, int> >::const_iterator ite1 = vi.begin();ite1 != vi.end(); ++ite1)
+        {
+            int idj = m_board->cbod[ite1->first][ite1->second];
+            m_board->piess[i].setxy(ite1->first, ite1->second);
+            m_board->cbod[ite1->first][ite1->second] = i;
+            int val = 0, tp0;
+            if (idj != -1)
+            {
+                tp0 = m_board->piess[idj].gett0();
+                m_board->piess[idj].settp0(0);
+            }
+            val=_botmove(false,min,max);
+
+            if (zhi1 > val)
+            {
+                xx1 = ite1->first;
+                yy1 = ite1->second;
+                id1 = i;
+                zhi1 = val;
+            }
+            m_board->cbod[ite1->first][ite1->second] = idj;
+            if (idj != -1)
+                m_board->piess[idj].settp0(tp0);
+        }
+        m_board->cbod[xx][yy] = i;
+        m_board->piess[i].setxy(xx, yy);
+    }
+    m_board->piess[id1]._sel = true;
+    emit botfinsh();
+    Sleep(300);
+    if (m_board->cbod[xx1][yy1] != -1) m_board->piess[m_board->cbod[xx1][yy1]].settp0(0);
+    m_board->cbod[xx1][yy1] = id1;
+    m_board->cbod[m_board->piess[id1].getxx()][m_board->piess[id1].getyy()] = -1;
+    m_board->piess[id1].setxy(xx1, yy1);
+    m_board->piess[id1]._sel = false;
+    static int sum = 0;
+    qDebug() << "b " << ++sum;
+    emit botfinsh();
+}
+*/
+/*
 void botprocess::botmove() {
+    QMutexLocker lock(m_board->m_mutex);
     if(!m_board)
     {
        emit botfinsh();
        return;
     }
-
-    QMutexLocker lock(m_board->m_mutex);
     int id1, xx1, yy1, zhi1 = -10000;
 
     for ( int i = 0; i != 16; ++i ) {
@@ -185,7 +464,7 @@ void botprocess::botmove() {
     }
     m_board->piess[id1]._sel=true;
     emit botfinsh();
-    usleep(500000);
+    Sleep(300);
     if (m_board->cbod[ xx1 ][ yy1 ] != -1 ) m_board->piess[m_board-> cbod[ xx1 ][ yy1 ] ].settp0( 0 );
     m_board->cbod[ xx1 ][ yy1 ]                                   = id1;
     m_board->cbod[ m_board->piess[ id1 ].getxx() ][ m_board->piess[ id1 ].getyy() ] = -1;
@@ -197,3 +476,4 @@ void botprocess::botmove() {
 }
 
 
+*/
