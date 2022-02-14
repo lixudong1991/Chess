@@ -8,12 +8,12 @@ netcces::netcces(int da) : cces(da)
     if (dt == -1)
     {
         serv = new QTcpServer(this);
-        bool b=    serv->listen(QHostAddress("192.168.100.4"), 9876);
+        bool b=    serv->listen(QHostAddress::Any, 9876);
         connect(serv, SIGNAL(newConnection()), this, SLOT(slotion()));
     }
     else {
         sk = new QTcpSocket(this);
-        sk->connectToHost(QHostAddress("192.168.100.4"), 9876);
+        sk->connectToHost(QHostAddress("127.0.0.1"), 9876);
         connect(sk, SIGNAL(readyRead()), this, SLOT(slotrecv()));
     }
 }

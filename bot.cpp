@@ -18,7 +18,7 @@
 
 
 bot::bot(QWidget *parent)
-    :cces(1,parent)
+    :cces(1,40,parent)
 {
     m_bot = new botprocess;
     m_bot ->m_board =this;
@@ -29,11 +29,11 @@ bot::bot(QWidget *parent)
     connect(m_bot, SIGNAL(botfinsh()), this, SLOT(botfinsh()));
     mov01 =false;
     m_botThread->start();
-    setFixedSize(d * 10 + 100, d * 11);
-    bt = new QPushButton(QString::fromLocal8Bit("ÏÂÒ»²½"),this);
+//    setFixedSize(d * 10 + 100, d * 11);
+//    bt = new QPushButton(QString::fromLocal8Bit("ä¸‹ä¸€æ­¥"),this);
 
-    bt->move(d * 10 + 10, 200); bt->setFixedSize(100,50);
-    connect(bt,SIGNAL(clicked(bool)),this,SLOT(onbt()));
+//    bt->move(d * 10 +10, 200); bt->setFixedSize(80,40);
+//    connect(bt,SIGNAL(clicked(bool)),this,SLOT(onbt()));
 }
 
 bot::~bot()
@@ -196,8 +196,11 @@ int botprocess::alpahbeta(bool b, int parentminv, int parentmaxv, int depth)
     if(depth == 0)
     {
         int v =  bove();
-      //  qDebug() << "sum = " << v;
-      //  waitcond.wait(&m_mutex);
+//        if(v == -9)
+//        {
+//           qDebug() << "sum = " << v;
+//           waitcond.wait(&m_mutex);
+//        }
         return v;
     }
     int start = b?0:16, end=b?16:32;
@@ -277,7 +280,8 @@ ret:
 }
 void botprocess::botmove()
 {
-    Sleep(100);
+
+    usleep(10000);
     QMutexLocker lock(&m_mutex);
     if (!m_board)
     {
@@ -286,7 +290,6 @@ void botprocess::botmove()
     }
     int id1, xx1, yy1,zhi=11000;
     int maxv = 12000,minv=-12000;
-    bool bdead=false;
         for (int i = 0; i != 16; ++i) {
             if (m_board->piess[i].gett0() == 0) continue;
             QVector<QPair<int, int> > vi;
@@ -307,13 +310,29 @@ void botprocess::botmove()
                     m_board->piess[idj].settp0(0);
                 }
                 val=alpahbeta(false,minv,maxv,4);
+
              //   qDebug() << "zhi = " << zhi <<" val = " <<val;
-                if (zhi >= val)
+
+                if (val < maxv )
                 {
+                    maxv = val;
                     xx1 = ite1->first;
                     yy1 = ite1->second;
                     id1 = i;
                     zhi = val;
+                }
+                if(maxv<=minv)
+                {
+                    m_board->cbod[ite1->first][ite1->second] = idj;
+                    if (idj != -1)
+                        m_board->piess[idj].settp0(tp0);
+                    m_board->cbod[xx][yy] = i;
+                    m_board->piess[i].setxy(xx, yy);
+                    xx1 = ite1->first;
+                    yy1 = ite1->second;
+                    id1 = i;
+                    zhi = val;
+                    goto ret;
                 }
                 m_board->cbod[ite1->first][ite1->second] = idj;
                 if (idj != -1)
@@ -322,9 +341,11 @@ void botprocess::botmove()
             m_board->cbod[xx][yy] = i;
             m_board->piess[i].setxy(xx, yy);
         }
+ret:
+
     m_board->piess[id1]._sel = true;
     emit botfinsh();
-    Sleep(300);
+    usleep(300000);
     if (m_board->cbod[xx1][yy1] != -1) m_board->piess[m_board->cbod[xx1][yy1]].settp0(0);
     m_board->cbod[xx1][yy1] = id1;
     m_board->cbod[m_board->piess[id1].getxx()][m_board->piess[id1].getyy()] = -1;

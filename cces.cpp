@@ -8,7 +8,8 @@
 #define CL2  "blue"
  QMutex m_mutex;
  QWaitCondition waitcond;
-cces::cces(int dd, QWidget *parent) : dt(dd),
+cces::cces(int dd, int piesRad,QWidget *parent) : dt(dd),
+    d(piesRad),
     QWidget(parent)
 {
     for (int i = 0; i != 9; ++i)
@@ -146,7 +147,7 @@ void cces::paintEvent(QPaintEvent *)
         path.lineTo(paoxian[i][0] * d + d / 4, paoxian[i][1] * d + d / 8);
         painte.drawPath(path);
     }
-    painte.setFont(QFont(CHTXT("楷体"), 18, 2 * d));
+    painte.setFont(QFont(CHTXT("楷体"), d/2,  d));
     painte.drawText(QRect(2 * d, 4 * d + d / 2, 2*d, 2 * d), Qt::AlignCenter,
                     CHTXT("楚 河"));
     painte.drawText(QRect(6 * d, 4 * d + d / 2, 2 * d, 2 * d), Qt::AlignCenter,
