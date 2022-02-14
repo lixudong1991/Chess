@@ -8,9 +8,10 @@
 #define CL2  "blue"
  QMutex m_mutex;
  QWaitCondition waitcond;
-cces::cces(int dd, int piesRad,QWidget *parent) : dt(dd),
-    d(piesRad),
-    QWidget(parent)
+cces::cces(int dd, int piesRad,QWidget *parent) :
+
+    QWidget(parent),
+    d(piesRad),dt(dd),m_sum(0)
 {
     for (int i = 0; i != 9; ++i)
         for (int j = 0; j != 10; ++j) cbod[i][j] = -1;
@@ -147,7 +148,7 @@ void cces::paintEvent(QPaintEvent *)
         path.lineTo(paoxian[i][0] * d + d / 4, paoxian[i][1] * d + d / 8);
         painte.drawPath(path);
     }
-    painte.setFont(QFont(CHTXT("楷体"), d/2,  d));
+    painte.setFont(QFont(CHTXT("楷体"), 20,  d/2));
     painte.drawText(QRect(2 * d, 4 * d + d / 2, 2*d, 2 * d), Qt::AlignCenter,
                     CHTXT("楚 河"));
     painte.drawText(QRect(6 * d, 4 * d + d / 2, 2 * d, 2 * d), Qt::AlignCenter,
@@ -370,7 +371,7 @@ void cces::getPath(int idd, QVector<QPair<int, int> > &v)
                 v.push_back(QPair<int, int>(xx,yy));
         }else
         {
-            if((yy>6&xx<6)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
+            if((yy>6&&xx<6)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0()))
                 v.push_back(QPair<int, int>(xx,yy));
         }
         xx= x-1,yy = y+1;
@@ -415,7 +416,7 @@ void cces::getPath(int idd, QVector<QPair<int, int> > &v)
                 v.push_back(QPair<int, int>(xx,yy));
         }else
         {
-            if((yy>4&xx<9)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x+1][y-1]==-1)
+            if((yy>4&&xx<9)&&(cbod[xx][yy]==-1||piess[cbod[xx][yy]].gett0()!=piess[idd].gett0())&&cbod[x+1][y-1]==-1)
                 v.push_back(QPair<int, int>(xx,yy));
         }
         xx= x-2,yy = y+2;

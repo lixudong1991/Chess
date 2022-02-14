@@ -8,7 +8,7 @@ netcces::netcces(int da) : cces(da)
     if (dt == -1)
     {
         serv = new QTcpServer(this);
-        bool b=    serv->listen(QHostAddress::Any, 9876);
+        serv->listen(QHostAddress::Any, 9876);
         connect(serv, SIGNAL(newConnection()), this, SLOT(slotion()));
     }
     else {

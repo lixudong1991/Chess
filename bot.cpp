@@ -18,7 +18,7 @@
 
 
 bot::bot(QWidget *parent)
-    :cces(1,40,parent)
+    :cces(1,80,parent)
 {
     m_bot = new botprocess;
     m_bot ->m_board =this;
@@ -192,88 +192,118 @@ int botprocess::_botmove(bool b,int minv,int maxv)//MIN-MAX
 
 int botprocess::alpahbeta(bool b, int parentminv, int parentmaxv, int depth)
 {
-
-    if(depth == 0)
-    {
-        int v =  bove();
-//        if(v == -9)
-//        {
-//           qDebug() << "sum = " << v;
-//           waitcond.wait(&m_mutex);
-//        }
-        return v;
-    }
-    int start = b?0:16, end=b?16:32;
     int maxv = parentmaxv,minv=parentminv,value=0;
     QVector<QPair<int, int> > vj;
-    for (int j = start; j != end; ++j)
+    if(b)
     {
-        if (m_board->piess[j].gett0() == 0) continue;
-        vj.clear();
-        m_board->getPath(j, vj);
-        if (vj.isEmpty()) continue;
-        int xx = m_board->piess[j].getxx();
-        int yy = m_board->piess[j].getyy();
-        m_board->cbod[xx][yy] = -1;
-
-        for (QVector<QPair<int, int> >::const_iterator ite1 =vj.begin(); ite1 != vj.end(); ++ite1)
+        for (int j = 0; j != 16; ++j)
         {
-            int idj = m_board->cbod[ite1->first][ite1->second];
-            m_board->piess[j].setxy(ite1->first, ite1->second);
-            m_board->cbod[ite1->first][ite1->second] = j;
-            int t0 = 0;
-            if (idj != -1)
+            if (!m_board->piess[j].isAlive()) continue;
+            vj.clear();
+            m_board->getPath(j, vj);
+            if (vj.isEmpty()) continue;
+            int xx = m_board->piess[j].getxx();
+            int yy = m_board->piess[j].getyy();
+            m_board->cbod[xx][yy] = -1;
+
+            for (int ite1 =0; ite1 != vj.size(); ++ite1)
             {
-                t0 = m_board->piess[idj].gett0();
-                m_board->piess[idj].settp0(0);
-                if (idj ==4)
+                int idj = m_board->cbod[vj[ite1].first][vj[ite1].second];
+                m_board->piess[j].setxy(vj[ite1].first, vj[ite1].second);
+                m_board->cbod[vj[ite1].first][vj[ite1].second] = j;
+                if (idj != -1)
                 {
-                    int v1 = bove();
-                    m_board->cbod[ite1->first][ite1->second] = idj;
-                    m_board->piess[4].settp0(t0);
-                    m_board->cbod[xx][yy] = j;
-                    m_board->piess[j].setxy(xx, yy);
-                    return v1;
+                    m_board->killPies(idj);
+                    if (idj ==27)
+                    {
+                        int sum=m_board->getBoardSum();
+                        m_board->cbod[vj[ite1].first][vj[ite1].second] = idj;
+                        m_board->resumePies(idj);
+                        m_board->cbod[xx][yy] = j;
+                        m_board->piess[j].setxy(xx, yy);
+                        return sum;
+                    }
                 }
-            } 
-            value = alpahbeta(!b,minv,maxv,depth-1);
-            if (b)
-            {
+
+                value = (depth-1==0?m_board->getBoardSum():alpahbeta(false,minv,maxv,depth-1));
                 if (value < maxv )
                     maxv = value;
-            }
-            else
-            {
-                if (value > minv)
-                    minv = value;
-            }
-            if(maxv<=minv)
-            {
-                m_board->cbod[ite1->first][ite1->second] = idj;
-                if (idj != -1)
-                    m_board->piess[idj].settp0(t0);
-                m_board->cbod[xx][yy] = j;
-                m_board->piess[j].setxy(xx, yy);
-                goto ret;
-            }
-            m_board->cbod[ite1->first][ite1->second] = idj;
-            if (idj != -1)
-                m_board->piess[idj].settp0(t0);
 
+                if(maxv<=minv)
+                {
+                    m_board->cbod[vj[ite1].first][vj[ite1].second] = idj;
+                    if (idj != -1)
+                       m_board->resumePies(idj);
+                    m_board->cbod[xx][yy] = j;
+                    m_board->piess[j].setxy(xx, yy);
+                    goto ret;
+                }
+                m_board->cbod[vj[ite1].first][vj[ite1].second] = idj;
+                if (idj != -1)
+                   m_board->resumePies(idj);
+
+            }
+            m_board->cbod[xx][yy] = j;
+            m_board->piess[j].setxy(xx, yy);
         }
-        m_board->cbod[xx][yy] = j;
-        m_board->piess[j].setxy(xx, yy);
-    }
-ret:
-    if (b)
-    {
-        if (maxv != parentmaxv)
+
+ret:    if (maxv != parentmaxv)
             return maxv;
     }
     else
     {
-        if (minv != parentminv)
-            return minv;
+        for (int j = 16; j != 32; ++j)
+        {
+            if (!m_board->piess[j].isAlive()) continue;
+            vj.clear();
+            m_board->getPath(j, vj);
+            if (vj.isEmpty()) continue;
+            int xx = m_board->piess[j].getxx();
+            int yy = m_board->piess[j].getyy();
+            m_board->cbod[xx][yy] = -1;
+
+            for (int ite1 =0; ite1 != vj.size(); ++ite1)
+            {
+                int idj = m_board->cbod[vj[ite1].first][vj[ite1].second];
+                m_board->piess[j].setxy(vj[ite1].first, vj[ite1].second);
+                m_board->cbod[vj[ite1].first][vj[ite1].second] = j;
+                if (idj != -1)
+                {
+                    m_board->killPies(idj);
+                    if (idj ==4 )
+                    {
+                        int sum=m_board->getBoardSum();
+                        m_board->cbod[vj[ite1].first][vj[ite1].second] = idj;
+                        m_board->resumePies(idj);
+                        m_board->cbod[xx][yy] = j;
+                        m_board->piess[j].setxy(xx, yy);
+                        return sum;
+                    }
+                }
+
+                value = (depth-1==0?m_board->getBoardSum():alpahbeta(true,minv,maxv,depth-1));
+                if (value > minv)
+                    minv = value;
+                if(maxv<=minv)
+                {
+                    m_board->cbod[vj[ite1].first][vj[ite1].second] = idj;
+                    if (idj != -1)
+                       m_board->resumePies(idj);
+                    m_board->cbod[xx][yy] = j;
+                    m_board->piess[j].setxy(xx, yy);
+                    goto ret1;
+                }
+                m_board->cbod[vj[ite1].first][vj[ite1].second] = idj;
+                if (idj != -1)
+                   m_board->resumePies(idj);
+
+            }
+            m_board->cbod[xx][yy] = j;
+            m_board->piess[j].setxy(xx, yy);
+        }
+
+ret1:    if (minv != parentminv)
+              return minv;
     }
 
     return value;
@@ -281,7 +311,7 @@ ret:
 void botprocess::botmove()
 {
 
-    usleep(10000);
+    Sleep(100);
     QMutexLocker lock(&m_mutex);
     if (!m_board)
     {
@@ -303,16 +333,11 @@ void botprocess::botmove()
                 int idj = m_board->cbod[ite1->first][ite1->second];
                 m_board->piess[i].setxy(ite1->first, ite1->second);
                 m_board->cbod[ite1->first][ite1->second] = i;
-                int val = 0, tp0;
+                int val = 0;
                 if (idj != -1)
-                {
-                    tp0 = m_board->piess[idj].gett0();
-                    m_board->piess[idj].settp0(0);
-                }
-                val=alpahbeta(false,minv,maxv,5);
+                    m_board->killPies(idj);
 
-             //   qDebug() << "zhi = " << zhi <<" val = " <<val;
-
+                val=alpahbeta(false,minv,maxv,6);
                 if (val < maxv )
                 {
                     maxv = val;
@@ -325,7 +350,8 @@ void botprocess::botmove()
                 {
                     m_board->cbod[ite1->first][ite1->second] = idj;
                     if (idj != -1)
-                        m_board->piess[idj].settp0(tp0);
+                        m_board->resumePies(idj);
+
                     m_board->cbod[xx][yy] = i;
                     m_board->piess[i].setxy(xx, yy);
                     xx1 = ite1->first;
@@ -336,7 +362,7 @@ void botprocess::botmove()
                 }
                 m_board->cbod[ite1->first][ite1->second] = idj;
                 if (idj != -1)
-                    m_board->piess[idj].settp0(tp0);
+                    m_board->resumePies(idj);
             }
             m_board->cbod[xx][yy] = i;
             m_board->piess[i].setxy(xx, yy);
@@ -345,16 +371,192 @@ ret:
 
     m_board->piess[id1]._sel = true;
     emit botfinsh();
-    usleep(300000);
-    if (m_board->cbod[xx1][yy1] != -1) m_board->piess[m_board->cbod[xx1][yy1]].settp0(0);
+    Sleep(500);
+    if (m_board->cbod[xx1][yy1] != -1)
+        m_board->killPies(m_board->cbod[xx1][yy1]);
     m_board->cbod[xx1][yy1] = id1;
     m_board->cbod[m_board->piess[id1].getxx()][m_board->piess[id1].getyy()] = -1;
     m_board->piess[id1].setxy(xx1, yy1);
     m_board->piess[id1]._sel = false;
-    static int sum = 0;
-    qDebug() << "b " << ++sum;
     emit botfinsh();
 }
+
+//int botprocess::alpahbeta(bool b, int parentminv, int parentmaxv, int depth)
+//{
+//    int start = b?0:16, end=b?16:32;
+//    int maxv = parentmaxv,minv=parentminv,value=0;
+//    QVector<QPair<int, int> > vj;
+//    for (int j = start; j != end; ++j)
+//    {
+//        if (m_board->piess[j].gett0() == 0) continue;
+//        vj.clear();
+//        m_board->getPath(j, vj);
+//        if (vj.isEmpty()) continue;
+//        int xx = m_board->piess[j].getxx();
+//        int yy = m_board->piess[j].getyy();
+//        m_board->cbod[xx][yy] = -1;
+
+//        for (int ite1 =0; ite1 != vj.size(); ++ite1)
+//        {
+//            int idj = m_board->cbod[vj[ite1].first][vj[ite1].second];
+//            m_board->piess[j].setxy(vj[ite1].first, vj[ite1].second);
+//            m_board->cbod[vj[ite1].first][vj[ite1].second] = j;
+//            int t0 = 0;
+//            if (idj != -1)
+//            {
+//                t0 = m_board->piess[idj].gett0();
+//                m_board->piess[idj].settp0(0);
+//                if (idj ==4)
+//                {
+//                    m_board->cbod[vj[ite1].first][vj[ite1].second] = idj;
+//                    m_board->piess[4].settp0(t0);
+//                    m_board->cbod[xx][yy] = j;
+//                    m_board->piess[j].setxy(xx, yy);
+//                    return 12000;
+//                }
+//            }
+//            if(depth-1==0)
+//            {
+//                 int sum=0;
+//                 for(int i=0;i<m_board->piess.size();i++)
+//                 {
+//                     if(m_board->piess.at(i).gett0()==0)
+//                         continue;
+//                     sum+=m_board->piess.at(i).gtzhi();
+//                 }
+//                 value = sum;
+//            }else
+//                 value = alpahbeta(!b,minv,maxv,depth-1);
+//            if (b)
+//            {
+//                if (value < maxv )
+//                    maxv = value;
+//            }
+//            else
+//            {
+//                if (value > minv)
+//                    minv = value;
+//            }
+//            if(maxv<=minv)
+//            {
+//                m_board->cbod[vj[ite1].first][vj[ite1].second] = idj;
+//                if (idj != -1)
+//                {
+//                    m_board->piess[idj].settp0(t0);
+//                }
+//                m_board->cbod[xx][yy] = j;
+//                m_board->piess[j].setxy(xx, yy);
+//                goto ret;
+//            }
+//            m_board->cbod[vj[ite1].first][vj[ite1].second] = idj;
+//            if (idj != -1)
+//            {
+//                m_board->piess[idj].settp0(t0);
+//            }
+
+//        }
+//        m_board->cbod[xx][yy] = j;
+//        m_board->piess[j].setxy(xx, yy);
+//    }
+//ret:
+//    if (b)
+//    {
+//        if (maxv != parentmaxv)
+//            return maxv;
+//    }
+//    else
+//    {
+//        if (minv != parentminv)
+//            return minv;
+//    }
+
+//    return value;
+//}
+//void botprocess::botmove()
+//{
+
+//    Sleep(100);
+//    QMutexLocker lock(&m_mutex);
+//    if (!m_board)
+//    {
+//        emit botfinsh();
+//        return;
+//    }
+//    int id1, xx1, yy1,zhi=11000;
+//    int maxv = 12000,minv=-12000;
+//        for (int i = 0; i != 16; ++i) {
+//            if (!m_board->piess[i].isAlive()) continue;
+//            QVector<QPair<int, int> > vi;
+//            m_board->getPath(i, vi);
+//            if (vi.isEmpty()) continue;
+//            int xx = m_board->piess[i].getxx();
+//            int yy = m_board->piess[i].getyy();
+//            m_board->cbod[xx][yy] = -1;
+//            for (QVector<QPair<int, int> >::const_iterator ite1 = vi.begin();ite1 != vi.end(); ++ite1)
+//            {
+//                int idj = m_board->cbod[ite1->first][ite1->second];
+//                m_board->piess[i].setxy(ite1->first, ite1->second);
+//                m_board->cbod[ite1->first][ite1->second] = i;
+//                int val = 0, tp0;
+//                if (idj != -1)
+//                {
+//                    tp0 = m_board->piess[idj].gett0();
+//                    m_board->piess[idj].settp0(0);
+
+//                }
+//                val=alpahbeta(false,minv,maxv,6);
+
+//                qDebug() << "zhi = " << zhi <<" val = " <<val;
+
+//                if (val < maxv )
+//                {
+//                    maxv = val;
+//                    xx1 = ite1->first;
+//                    yy1 = ite1->second;
+//                    id1 = i;
+//                    zhi = val;
+//                }
+//                if(maxv<=minv)
+//                {
+//                    m_board->cbod[ite1->first][ite1->second] = idj;
+//                    if (idj != -1)
+//                    {
+//                        m_board->piess[idj].settp0(tp0);
+//                    }
+//                    m_board->cbod[xx][yy] = i;
+//                    m_board->piess[i].setxy(xx, yy);
+//                    xx1 = ite1->first;
+//                    yy1 = ite1->second;
+//                    id1 = i;
+//                    zhi = val;
+//                    goto ret;
+//                }
+//                m_board->cbod[ite1->first][ite1->second] = idj;
+//                if (idj != -1)
+//                {
+//                    m_board->piess[idj].settp0(tp0);
+//                }
+//            }
+//            m_board->cbod[xx][yy] = i;
+//            m_board->piess[i].setxy(xx, yy);
+//        }
+//ret:
+
+//    m_board->piess[id1]._sel = true;
+//    emit botfinsh();
+//    Sleep(500);
+//    if (m_board->cbod[xx1][yy1] != -1)
+//    {
+//        m_board->piess[m_board->cbod[xx1][yy1]].settp0(0);
+//    }
+//    m_board->cbod[xx1][yy1] = id1;
+//    m_board->cbod[m_board->piess[id1].getxx()][m_board->piess[id1].getyy()] = -1;
+//    m_board->piess[id1].setxy(xx1, yy1);
+//    m_board->piess[id1]._sel = false;
+////    static int sum = 0;
+////    qDebug() << "b " << ++sum;
+//    emit botfinsh();
+//}
 
 /*
 void botprocess::botmove()

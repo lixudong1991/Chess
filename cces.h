@@ -18,6 +18,9 @@ public:
     ~cces();
     bool canMove(int iid,int ixx,int iyy);
     void getPath(int iid,QVector<QPair<int, int> > &v);
+    inline void killPies(int iid){ piess[iid].settp0(0);m_sum -=piess[iid].gtzhi();}
+    inline void resumePies(int iid){piess[iid].resume();m_sum +=piess[iid].gtzhi();}
+    inline int  getBoardSum()const{ return m_sum;}
     int cbod[9][10];
     QVector<pies> piess;
     int id=-1,d,dt;
@@ -25,7 +28,8 @@ public:
 protected:
     void mouseReleaseEvent(QMouseEvent *ev);
     void paintEvent(QPaintEvent*);
-
+private:
+    int m_sum;
 };
 
 #endif // CCES_H

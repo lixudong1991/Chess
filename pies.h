@@ -12,9 +12,11 @@ public:
     inline void setxy(int x,int y){xx=x; yy=y;}
     inline void settp0(int t){tp0=t;}
     inline int gtzhi()const{return zhi;}
+    inline void resume(){ tp0=tp_0;}
+    inline bool isAlive(){ return tp0 == tp_0;}
     bool _sel=false;
  private:
-    int tp0;
+    int tp0,tp_0;
     int tp1;
     int xx;
     int yy;

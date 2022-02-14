@@ -37,7 +37,6 @@ class bot : public cces
 public:
    explicit bot(QWidget *parent = 0);
     ~bot();
-
 signals:
    void botmove();
 public slots:
@@ -49,6 +48,7 @@ private:
    botprocess *m_bot;
    QThread    *m_botThread;
    QPushButton  *bt;
+
 };
 
 #endif // BOT_H
