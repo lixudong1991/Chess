@@ -133,7 +133,7 @@ botprocess::~botprocess()
 
 }
 
-int botprocess::_botmove(bool b,int minv,int maxv)
+int botprocess::_botmove(bool b,int minv,int maxv)//MIN-MAX
 {
     ++count;
     int start = b?0:16, end=b?16:32;
@@ -205,10 +205,11 @@ int botprocess::alpahbeta(bool b, int parentminv, int parentmaxv, int depth)
     }
     int start = b?0:16, end=b?16:32;
     int maxv = parentmaxv,minv=parentminv,value=0;
+    QVector<QPair<int, int> > vj;
     for (int j = start; j != end; ++j)
     {
         if (m_board->piess[j].gett0() == 0) continue;
-        QVector<QPair<int, int> > vj;
+        vj.clear();
         m_board->getPath(j, vj);
         if (vj.isEmpty()) continue;
         int xx = m_board->piess[j].getxx();
@@ -225,17 +226,16 @@ int botprocess::alpahbeta(bool b, int parentminv, int parentmaxv, int depth)
             {
                 t0 = m_board->piess[idj].gett0();
                 m_board->piess[idj].settp0(0);
+                if (idj ==4)
+                {
+                    int v1 = bove();
+                    m_board->cbod[ite1->first][ite1->second] = idj;
+                    m_board->piess[4].settp0(t0);
+                    m_board->cbod[xx][yy] = j;
+                    m_board->piess[j].setxy(xx, yy);
+                    return v1;
+                }
             } 
-                      
-            if (depth == 4 && idj ==4)
-            {
-                int v1 = bove();
-                m_board->cbod[ite1->first][ite1->second] = idj;
-                m_board->piess[4].settp0(t0);
-                m_board->cbod[xx][yy] = j;
-                m_board->piess[j].setxy(xx, yy);
-                return v1;
-            }
             value = alpahbeta(!b,minv,maxv,depth-1);
             if (b)
             {
@@ -309,7 +309,7 @@ void botprocess::botmove()
                     tp0 = m_board->piess[idj].gett0();
                     m_board->piess[idj].settp0(0);
                 }
-                val=alpahbeta(false,minv,maxv,4);
+                val=alpahbeta(false,minv,maxv,5);
 
              //   qDebug() << "zhi = " << zhi <<" val = " <<val;
 

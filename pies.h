@@ -5,13 +5,13 @@ class pies
 public:
     pies(){}
     pies(int t0,int t1,int x, int y);
-    int getxx()const{return xx;}
-    int getyy()const{return yy;}
-    int gett0()const{return tp0;}
-    int gett1()const{return tp1;}
-    void setxy(int x,int y){xx=x; yy=y;}
-    void settp0(int t){tp0=t;}
-    int gtzhi()const{return zhi;}
+    inline int getxx()const{return xx;}
+    inline int getyy()const{return yy;}
+    inline int gett0()const{return tp0;}
+    inline int gett1()const{return tp1;}
+    inline void setxy(int x,int y){xx=x; yy=y;}
+    inline void settp0(int t){tp0=t;}
+    inline int gtzhi()const{return zhi;}
     bool _sel=false;
  private:
     int tp0;
