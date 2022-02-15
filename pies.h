@@ -1,5 +1,6 @@
 #ifndef PIES_H
 #define PIES_H
+#include <QPixmap>
 class pies
 {
 public:
@@ -15,6 +16,7 @@ public:
     inline void resume(){ tp0=tp_0;}
     inline bool isAlive(){ return tp0 == tp_0;}
     bool _sel=false;
+    QPixmap m_img;
  private:
     int tp0,tp_0;
     int tp1;

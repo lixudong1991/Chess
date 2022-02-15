@@ -4,14 +4,15 @@
 #include <QRect>
 #include <QTextOption>
 #include <QPainterPath>
+#include <QPixmap>
 #define CL1  "red"
 #define CL2  "blue"
  QMutex m_mutex;
  QWaitCondition waitcond;
-cces::cces(int dd, int piesRad,QWidget *parent) :
+cces::cces(int dd,QWidget *parent) :
 
     QWidget(parent),
-    d(piesRad),dt(dd),m_sum(0)
+    d(54),dt(dd),m_sum(0)
 {
     for (int i = 0; i != 9; ++i)
         for (int j = 0; j != 10; ++j) cbod[i][j] = -1;
@@ -65,7 +66,10 @@ cces::cces(int dd, int piesRad,QWidget *parent) :
     };
 
     for(int i=0;i<32;i++)
+    {
         piess.append(temp[i]);
+        paint_piess.append(temp[i]);
+    }
 
 
     //  piess=temp;
@@ -73,7 +77,12 @@ cces::cces(int dd, int piesRad,QWidget *parent) :
     {
         cbod[piess[i].getxx()][piess[i].getyy()] = i;
     }
-    setFixedSize(d*10, d*11);
+
+ //   setFixedSize(d*10, d*11);
+    m_bkimg=QPixmap(":/bg.png").scaled(466,514);
+    setFixedSize(560, 600);
+    setAutoFillBackground(true);
+
 }
 
 cces::~cces()
@@ -81,164 +90,164 @@ cces::~cces()
 
 }
 
-void cces::paintEvent(QPaintEvent *)
-{
-    QPainter painte(this);
-    painte.setRenderHint(QPainter::Antialiasing,true);
-    for (int i = 1; i != 11; ++i)
-    {
-        if ((i == 1) ||
-            (i == 10)) painte.setPen(QPen(Qt::black, 3, Qt::SolidLine));
-        painte.drawLine(QPoint(d, i * d), QPoint(9 * d, i * d));
+//void cces::paintEvent(QPaintEvent *)
+//{
+//    QPainter painte(this);
+//    painte.setRenderHint(QPainter::Antialiasing,true);
+//    for (int i = 1; i != 11; ++i)
+//    {
+//        if ((i == 1) ||
+//            (i == 10)) painte.setPen(QPen(Qt::black, 3, Qt::SolidLine));
+//        painte.drawLine(QPoint(d, i * d), QPoint(9 * d, i * d));
 
-        if ((i == 1) ||
-            (i == 10)) painte.setPen(QPen(Qt::black, 1, Qt::SolidLine));
-    }
+//        if ((i == 1) ||
+//            (i == 10)) painte.setPen(QPen(Qt::black, 1, Qt::SolidLine));
+//    }
 
-    for (int j = 1; j != 10; ++j)
-    {
-        if ((j == 1) || (j == 9)) {
-            painte.setPen(QPen(Qt::black, 3, Qt::SolidLine));
-            painte.drawLine(QPoint(j * d, d), QPoint(j * d, 10 * d));
-            painte.setPen(QPen(Qt::black, 1, Qt::SolidLine));
-        }
-        else {
-            painte.drawLine(QPoint(j * d, d),     QPoint(j * d, 5 * d));
-            painte.drawLine(QPoint(j * d, 6 * d), QPoint(j * d, 10 * d));
-        }
-    }
-    int a[16][2][2] =
-    {   { { 3, 1  }, { 1, 3  } },    { { 3, 1  }, { 7, 5  } },
-        { { 4, 1  }, { 6, 3  } },    { { 6, 1  }, { 4, 3  } },
-        { { 7, 1  }, { 3, 5  } },    { { 7, 1  }, { 9, 3  } },
-        { { 1, 3  }, { 3, 5  } },    { { 7, 5  }, { 9, 3  } },
-        { { 3, 6  }, { 1, 8  } },
-        { { 3, 6  }, { 7, 10 } },    { { 7, 6  }, { 3, 10 } },
-        { { 7, 6  }, { 9, 8  } },    { { 1, 8  }, { 3, 10 } },
-        { { 4, 10 }, { 6, 8  } },
-        { { 6, 10 }, { 4, 8  } },    { { 7, 10 }, { 9, 8  } }
+//    for (int j = 1; j != 10; ++j)
+//    {
+//        if ((j == 1) || (j == 9)) {
+//            painte.setPen(QPen(Qt::black, 3, Qt::SolidLine));
+//            painte.drawLine(QPoint(j * d, d), QPoint(j * d, 10 * d));
+//            painte.setPen(QPen(Qt::black, 1, Qt::SolidLine));
+//        }
+//        else {
+//            painte.drawLine(QPoint(j * d, d),     QPoint(j * d, 5 * d));
+//            painte.drawLine(QPoint(j * d, 6 * d), QPoint(j * d, 10 * d));
+//        }
+//    }
+//    int a[16][2][2] =
+//    {   { { 3, 1  }, { 1, 3  } },    { { 3, 1  }, { 7, 5  } },
+//        { { 4, 1  }, { 6, 3  } },    { { 6, 1  }, { 4, 3  } },
+//        { { 7, 1  }, { 3, 5  } },    { { 7, 1  }, { 9, 3  } },
+//        { { 1, 3  }, { 3, 5  } },    { { 7, 5  }, { 9, 3  } },
+//        { { 3, 6  }, { 1, 8  } },
+//        { { 3, 6  }, { 7, 10 } },    { { 7, 6  }, { 3, 10 } },
+//        { { 7, 6  }, { 9, 8  } },    { { 1, 8  }, { 3, 10 } },
+//        { { 4, 10 }, { 6, 8  } },
+//        { { 6, 10 }, { 4, 8  } },    { { 7, 10 }, { 9, 8  } }
 
-    };
+//    };
 
-    for (int i = 0; i != 16; ++i)
-    {
-        painte.drawLine(QPoint(a[i][0][0] * d, a[i][0][1] * d),
-                        QPoint(a[i][1][0] * d, a[i][1][1] * d));
-    }
-    int paoxian[4][2] = {
-        {2,3},{8,3},{2,8},{8,8}
-    };
-    QPainterPath path;
-    for (int i=0;i<4;i++)
-    { 
-        path.moveTo(paoxian[i][0] * d - d / 8, paoxian[i][1] * d - d / 4);
-        path.lineTo(paoxian[i][0] * d - d / 8, paoxian[i][1] * d - d / 8);
-        path.lineTo(paoxian[i][0] * d - d / 4, paoxian[i][1] * d - d / 8);
-        painte.drawPath(path);
-        path.moveTo(paoxian[i][0] * d + d / 8, paoxian[i][1] * d - d / 4);
-        path.lineTo(paoxian[i][0] * d + d / 8, paoxian[i][1] * d - d / 8);
-        path.lineTo(paoxian[i][0] * d + d / 4, paoxian[i][1] * d - d / 8);
-        painte.drawPath(path);
-        path.moveTo(paoxian[i][0] * d - d / 8, paoxian[i][1] * d + d / 4);
-        path.lineTo(paoxian[i][0] * d - d / 8, paoxian[i][1] * d + d / 8);
-        path.lineTo(paoxian[i][0] * d - d / 4, paoxian[i][1] * d + d / 8);
-        painte.drawPath(path);
-        path.moveTo(paoxian[i][0] * d + d / 8, paoxian[i][1] * d + d / 4);
-        path.lineTo(paoxian[i][0] * d + d / 8, paoxian[i][1] * d + d / 8);
-        path.lineTo(paoxian[i][0] * d + d / 4, paoxian[i][1] * d + d / 8);
-        painte.drawPath(path);
-    }
-    painte.setFont(QFont(CHTXT("楷体"), 20,  d/2));
-    painte.drawText(QRect(2 * d, 4 * d + d / 2, 2*d, 2 * d), Qt::AlignCenter,
-                    CHTXT("楚 河"));
-    painte.drawText(QRect(6 * d, 4 * d + d / 2, 2 * d, 2 * d), Qt::AlignCenter,
-                    CHTXT("汉 界"));
-    for (int i = 0; i != 32; ++i)
-    {
-        if (piess[i].gett0() == 0) continue;
+//    for (int i = 0; i != 16; ++i)
+//    {
+//        painte.drawLine(QPoint(a[i][0][0] * d, a[i][0][1] * d),
+//                        QPoint(a[i][1][0] * d, a[i][1][1] * d));
+//    }
+//    int paoxian[4][2] = {
+//        {2,3},{8,3},{2,8},{8,8}
+//    };
+//    QPainterPath path;
+//    for (int i=0;i<4;i++)
+//    {
+//        path.moveTo(paoxian[i][0] * d - d / 8, paoxian[i][1] * d - d / 4);
+//        path.lineTo(paoxian[i][0] * d - d / 8, paoxian[i][1] * d - d / 8);
+//        path.lineTo(paoxian[i][0] * d - d / 4, paoxian[i][1] * d - d / 8);
+//        painte.drawPath(path);
+//        path.moveTo(paoxian[i][0] * d + d / 8, paoxian[i][1] * d - d / 4);
+//        path.lineTo(paoxian[i][0] * d + d / 8, paoxian[i][1] * d - d / 8);
+//        path.lineTo(paoxian[i][0] * d + d / 4, paoxian[i][1] * d - d / 8);
+//        painte.drawPath(path);
+//        path.moveTo(paoxian[i][0] * d - d / 8, paoxian[i][1] * d + d / 4);
+//        path.lineTo(paoxian[i][0] * d - d / 8, paoxian[i][1] * d + d / 8);
+//        path.lineTo(paoxian[i][0] * d - d / 4, paoxian[i][1] * d + d / 8);
+//        painte.drawPath(path);
+//        path.moveTo(paoxian[i][0] * d + d / 8, paoxian[i][1] * d + d / 4);
+//        path.lineTo(paoxian[i][0] * d + d / 8, paoxian[i][1] * d + d / 8);
+//        path.lineTo(paoxian[i][0] * d + d / 4, paoxian[i][1] * d + d / 8);
+//        painte.drawPath(path);
+//    }
+//    painte.setFont(QFont(CHTXT("楷体"), 20,  d/2));
+//    painte.drawText(QRect(2 * d, 4 * d + d / 2, 2*d, 2 * d), Qt::AlignCenter,
+//                    CHTXT("楚 河"));
+//    painte.drawText(QRect(6 * d, 4 * d + d / 2, 2 * d, 2 * d), Qt::AlignCenter,
+//                    CHTXT("汉 界"));
+//    for (int i = 0; i != 32; ++i)
+//    {
+//        if (paint_piess[i].gett0() == 0) continue;
 
-        if (piess[i]._sel)
-        {
-            painte.setBrush(QBrush(QColor("yellow")));
-        }
-        else
-        {
-            painte.setBrush(QBrush(QColor("orange")));
-        }
-        QRect rect((piess[i].getxx() + 1) * d - d / 2,
-                   (piess[i].getyy() + 1) * d - d / 2, d, d);
-        piess[i].gett0() ==
-        1 ? painte.setPen(QColor(CL2)) : painte.setPen(QColor(CL1));
-        painte.drawEllipse(QPoint((piess[i].getxx() + 1) * d,
-                                  (piess[i].getyy() + 1) * d), d / 2, d / 2);
+//        if (paint_piess[i]._sel)
+//        {
+//            painte.setBrush(QBrush(QColor("yellow")));
+//        }
+//        else
+//        {
+//            painte.setBrush(QBrush(QColor("orange")));
+//        }
+//        QRect rect((paint_piess[i].getxx() + 1) * d - d / 2,
+//                   (paint_piess[i].getyy() + 1) * d - d / 2, d, d);
+//        paint_piess[i].gett0() ==
+//        1 ? painte.setPen(QColor(CL2)) : painte.setPen(QColor(CL1));
+//        painte.drawEllipse(QPoint((paint_piess[i].getxx() + 1) * d,
+//                                  (paint_piess[i].getyy() + 1) * d), d / 2, d / 2);
 
-        switch (piess[i].gett1())
-        {
-        case 1:
-            piess[i].gett0() ==
-            1 ? painte.drawText(rect, Qt::AlignCenter,
-                                CHTXT("将")) : painte
-            .drawText(rect,
-                      Qt::AlignCenter,
-                                CHTXT("帅"));
-            break;
+//        switch (paint_piess[i].gett1())
+//        {
+//        case 1:
+//            paint_piess[i].gett0() ==
+//            1 ? painte.drawText(rect, Qt::AlignCenter,
+//                                CHTXT("将")) : painte
+//            .drawText(rect,
+//                      Qt::AlignCenter,
+//                                CHTXT("帅"));
+//            break;
 
-        case 2:
-            piess[i].gett0() ==
-            1 ? painte.drawText(rect, Qt::AlignCenter,
-                                CHTXT("仕")) : painte
-            .drawText(rect,
-                      Qt::AlignCenter,
-                                CHTXT("士"));
-            break;
+//        case 2:
+//            paint_piess[i].gett0() ==
+//            1 ? painte.drawText(rect, Qt::AlignCenter,
+//                                CHTXT("仕")) : painte
+//            .drawText(rect,
+//                      Qt::AlignCenter,
+//                                CHTXT("士"));
+//            break;
 
-        case 3:
-            piess[i].gett0() ==
-            1 ? painte.drawText(rect, Qt::AlignCenter,
-                                CHTXT("象")) : painte
-            .drawText(rect,
-                      Qt::AlignCenter,
-                      CHTXT("相"));
-            break;
+//        case 3:
+//            paint_piess[i].gett0() ==
+//            1 ? painte.drawText(rect, Qt::AlignCenter,
+//                                CHTXT("象")) : painte
+//            .drawText(rect,
+//                      Qt::AlignCenter,
+//                      CHTXT("相"));
+//            break;
 
-        case 5:
-            piess[i].gett0() ==
-                1 ? painte.drawText(rect, Qt::AlignCenter,
-                    CHTXT("車")) : painte
-                .drawText(rect,
-                    Qt::AlignCenter,
-                    CHTXT("车"));
-            break;
+//        case 5:
+//            paint_piess[i].gett0() ==
+//                1 ? painte.drawText(rect, Qt::AlignCenter,
+//                    CHTXT("車")) : painte
+//                .drawText(rect,
+//                    Qt::AlignCenter,
+//                    CHTXT("车"));
+//            break;
 
-        case 4:
-            piess[i].gett0() ==
-            1 ? painte.drawText(rect, Qt::AlignCenter,
-                                CHTXT("馬")) : painte
-            .drawText(rect,
-                      Qt::AlignCenter,
-                                CHTXT("马"));
-            break;
+//        case 4:
+//            paint_piess[i].gett0() ==
+//            1 ? painte.drawText(rect, Qt::AlignCenter,
+//                                CHTXT("馬")) : painte
+//            .drawText(rect,
+//                      Qt::AlignCenter,
+//                                CHTXT("马"));
+//            break;
 
-        case 6:
-            piess[i].gett0() ==
-            1 ? painte.drawText(rect, Qt::AlignCenter,
-                                CHTXT("砲")) : painte
-            .drawText(rect,
-                      Qt::AlignCenter,
-                                CHTXT("炮"));
-            break;
+//        case 6:
+//            paint_piess[i].gett0() ==
+//            1 ? painte.drawText(rect, Qt::AlignCenter,
+//                                CHTXT("砲")) : painte
+//            .drawText(rect,
+//                      Qt::AlignCenter,
+//                                CHTXT("炮"));
+//            break;
 
-        case 7:
-            piess[i].gett0() ==
-            1 ? painte.drawText(rect, Qt::AlignCenter,
-                                CHTXT("卒")) : painte
-            .drawText(rect,
-                      Qt::AlignCenter,
-                      CHTXT("兵"));
-            break;
-        }
-    }
-}
+//        case 7:
+//            paint_piess[i].gett0() ==
+//            1 ? painte.drawText(rect, Qt::AlignCenter,
+//                                CHTXT("卒")) : painte
+//            .drawText(rect,
+//                      Qt::AlignCenter,
+//                      CHTXT("兵"));
+//            break;
+//        }
+//    }
+//}
 
 void cces::mouseReleaseEvent(QMouseEvent *ev)
 {
@@ -287,7 +296,30 @@ void cces::mouseReleaseEvent(QMouseEvent *ev)
             mov01 = !mov01;
         }
     }
+    for(int i=0;i<paint_piess.size();i++ )
+    {
+        paint_piess[i]=piess[i];
+    }
     update();
+}
+
+void cces::paintEvent(QPaintEvent *)
+{
+    QPainter painte(this);
+    painte.drawPixmap(QRect(38,38,m_bkimg.width(),m_bkimg.height()),m_bkimg);
+    for (int i = 0; i != 32; ++i)
+    {
+          if (paint_piess[i].gett0() == 0) continue;
+
+          QRect rect((paint_piess[i].getxx() + 1) * d - d / 2,
+                           (paint_piess[i].getyy() + 1) * d - d / 2, d, d);
+          if (paint_piess[i]._sel)
+          {
+                    painte.setPen(Qt::red);
+              painte.drawRect(rect);
+          }
+          painte.drawPixmap(rect,paint_piess[i].m_img);
+    }
 }
 
 bool cces::canMove(int iid, int ixx, int iyy)
@@ -649,4 +681,13 @@ void cces::getPath(int idd, QVector<QPair<int, int> > &v)
     default:
         break;
     }
+}
+
+void cces::upDateBoard()
+{
+    for(int i=0;i<paint_piess.size();i++ )
+    {
+         paint_piess[i]=piess[i];
+    }
+    update();
 }

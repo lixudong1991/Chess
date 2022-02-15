@@ -36,7 +36,7 @@ void netcces::slotrecv()
         if (id != -1) piess[id]._sel = false;
         id = 31 - ba[1];
         piess[id]._sel = true;
-        update();
+        upDateBoard();
     }
     else {
         int tx = 8 - ba[2], ty = 9 - ba[3];
@@ -49,7 +49,7 @@ void netcces::slotrecv()
         piess[id].setxy(tx, ty);
         id = -1;
         mov01 = !mov01;
-        update();
+        upDateBoard();
     }
 }
 
@@ -107,5 +107,5 @@ void netcces::mouseReleaseEvent(QMouseEvent *e1v)
             mov01 = !mov01;
         }
     }
-    update();
+     upDateBoard();
 }

@@ -26,6 +26,7 @@ signals:
     void botfinsh();
 private:
     int bove();
+    bool bossIsDead();
     int count;
 };
 

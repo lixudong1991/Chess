@@ -7,7 +7,7 @@
 QT       += core gui
 QT       += network
 
-CONFIG   += C++11
+CONFIG   += c++11
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Chess
@@ -36,3 +36,6 @@ HEADERS  += \
     cces.h \
     netcces.h \
     pies.h
+
+RESOURCES += \
+    img/image.qrc

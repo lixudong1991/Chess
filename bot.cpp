@@ -18,7 +18,7 @@
 
 
 bot::bot(QWidget *parent)
-    :cces(1,80,parent)
+    :cces(1,parent)
 {
     m_bot = new botprocess;
     m_bot ->m_board =this;
@@ -45,11 +45,11 @@ bot::~bot()
 
 void bot::botfinsh()
 {
-   update();
+    upDateBoard();
 }
 void bot::onbt()
 {
-    update();
+    upDateBoard();
     waitcond.wakeAll();
 }
 void bot::mouseReleaseEvent( QMouseEvent *ev ) {
@@ -96,27 +96,20 @@ void bot::mouseReleaseEvent( QMouseEvent *ev ) {
             piess[ id ]._sel                                   = false;
             piess[ id ].setxy( tx, ty );
             id    = -1;
-           // mov01 = true;
-            static int sum=0;
-            qDebug()<<"m "<<++sum;
             emit botmove();
         }
 
     }
-    update();
+    upDateBoard();
 }
 
 
 int botprocess::bove()
 {
-    int sum=0;
-    for(int i=0;i<m_board->piess.size();i++)
-    {
-        if(m_board->piess.at(i).gett0()==0)
-            continue;
-        sum+=m_board->piess.at(i).gtzhi();
-    }
-    return sum;
+}
+
+bool botprocess::bossIsDead()
+{
 }
 
 
@@ -214,15 +207,19 @@ int botprocess::alpahbeta(bool b, int parentminv, int parentmaxv, int depth)
                 if (idj != -1)
                 {
                     m_board->killPies(idj);
-                    if (idj ==27)
-                    {
-                        int sum=m_board->getBoardSum();
-                        m_board->cbod[vj[ite1].first][vj[ite1].second] = idj;
-                        m_board->resumePies(idj);
-                        m_board->cbod[xx][yy] = j;
-                        m_board->piess[j].setxy(xx, yy);
-                        return sum;
-                    }
+//                    if (idj ==27)
+//                    {
+//                        if(!m_board->piess[4].isAlive())
+//                        {
+////                            int sum=m_board->getBoardSum();
+////                            m_board->cbod[vj[ite1].first][vj[ite1].second] = idj;
+////                            m_board->resumePies(idj);
+////                            m_board->cbod[xx][yy] = j;
+////                            m_board->piess[j].setxy(xx, yy);
+////                            return sum;
+//                            return 12000;
+//                        }
+//                    }
                 }
 
                 value = (depth-1==0?m_board->getBoardSum():alpahbeta(false,minv,maxv,depth-1));
@@ -270,15 +267,15 @@ ret:    if (maxv != parentmaxv)
                 if (idj != -1)
                 {
                     m_board->killPies(idj);
-                    if (idj ==4 )
-                    {
-                        int sum=m_board->getBoardSum();
-                        m_board->cbod[vj[ite1].first][vj[ite1].second] = idj;
-                        m_board->resumePies(idj);
-                        m_board->cbod[xx][yy] = j;
-                        m_board->piess[j].setxy(xx, yy);
-                        return sum;
-                    }
+//                    if (idj ==4 )
+//                    {
+//                        int sum=m_board->getBoardSum();
+//                        m_board->cbod[vj[ite1].first][vj[ite1].second] = idj;
+//                        m_board->resumePies(idj);
+//                        m_board->cbod[xx][yy] = j;
+//                        m_board->piess[j].setxy(xx, yy);
+//                        return sum;
+//                    }
                 }
 
                 value = (depth-1==0?m_board->getBoardSum():alpahbeta(true,minv,maxv,depth-1));
@@ -308,17 +305,17 @@ ret1:    if (minv != parentminv)
 
     return value;
 }
+
 void botprocess::botmove()
 {
 
-    Sleep(100);
     QMutexLocker lock(&m_mutex);
     if (!m_board)
     {
         emit botfinsh();
         return;
     }
-    int id1, xx1, yy1,zhi=11000;
+    int id1, xx1, yy1;
     int maxv = 12000,minv=-12000;
         for (int i = 0; i != 16; ++i) {
             if (m_board->piess[i].gett0() == 0) continue;
@@ -344,7 +341,6 @@ void botprocess::botmove()
                     xx1 = ite1->first;
                     yy1 = ite1->second;
                     id1 = i;
-                    zhi = val;
                 }
                 if(maxv<=minv)
                 {
@@ -357,7 +353,6 @@ void botprocess::botmove()
                     xx1 = ite1->first;
                     yy1 = ite1->second;
                     id1 = i;
-                    zhi = val;
                     goto ret;
                 }
                 m_board->cbod[ite1->first][ite1->second] = idj;
@@ -371,7 +366,7 @@ ret:
 
     m_board->piess[id1]._sel = true;
     emit botfinsh();
-    Sleep(500);
+    usleep(50000);
     if (m_board->cbod[xx1][yy1] != -1)
         m_board->killPies(m_board->cbod[xx1][yy1]);
     m_board->cbod[xx1][yy1] = id1;
